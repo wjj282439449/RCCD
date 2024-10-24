@@ -1,0 +1,260 @@
+{
+    "model": {
+        "modelName": "UCCD",
+        "backboneName": "tiny",
+        "modelStage": [
+            "train",
+            "val"
+        ],
+        "inputChannel": 3,
+        "listOfCategoryNames": [
+            "unchange",
+            "change"
+        ],
+        "deeplySupervisedDecoder": {
+            "name": "AdversialSupervised",
+            "isActivateLayer": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "params": {
+                "kernel_size": 7,
+                "n_resblock": 0
+            }
+        },
+        "deeplySupervisedEncoder": {
+            "name": "AdversialSupervised",
+            "isActivateLayer": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "params": {
+                "kernel_size": 7,
+                "n_resblock": 0
+            }
+        },
+        "interactiveAttention": {
+            "name": "SpatiotemporalAttentionFull",
+            "isActivateLayer": [
+                0,
+                0,
+                0,
+                0
+            ],
+            "params": {
+            }
+        },
+        "embeddableAttention": {
+            "name": "DANetModule",
+            "isAttentionConcat": false,
+            "isActivateLayer": [
+                0,
+                0,
+                0,
+                0
+            ],
+            "params": {}
+        },
+        "CBAM": {
+            "name": "CBAM",
+            "isAttentionConcat": false,
+            "isActivateLayer": [
+                0,
+                0,
+                0,
+                0
+            ],
+            "params": {
+                "CAon": true,
+                "SAon": true
+            }
+        },
+        "decoderBlock": {
+            "name": "SqueezeResidualConv",
+            "params": {
+                "isBN": true
+            }
+        },
+        "detectorHead": {
+            "isFeatureFusion": true,
+            "isConcatInput": false
+        },
+        "backboneTrainedIn22k": true,
+        "backboneTrainedResolution": 384,
+        "modelRunDevice": "cuda",
+        "isBackbonePretrained": true,
+        "isBackboneFeaturesSimilarity": true,
+        "backboneTrainable": true,
+        "criterion": {
+            "segloss": {
+                "name": "CrossEntropyLoss",
+                "coefficient": 1.0,
+                "params": {
+                }
+            },
+            "uccdloss": {
+                "name": "L1Loss",
+                "coefficient": 0.05,
+                "params": {}
+            },
+            "styleloss": {
+                "name": "L1Loss",
+                "coefficient": 0.075,
+                "params": {}
+            }
+        }
+    },
+    "data": {
+        "dataset": {
+            "train": {
+                "name": "WSIDataset",
+                "params": {
+                    "root_dir": {
+                        "S2Looking": "data/datasets/S2Looking"
+                    },
+                    "mode": "train"
+                },
+                "sourceImageSize": [
+                    256,
+                    256
+                ],
+                "randomImgSize": [
+                    256,
+                    256
+                ]
+            },
+            "val": {
+                "name": "WSIDataset",
+                "params": {
+                    "root_dir": {
+                        "S2Looking": "data/datasets/S2Looking"
+                    },
+                    "mode": "val"
+                },
+                "sourceImageSize": [
+                    256,
+                    256
+                ],
+                "randomImgSize": [
+                    256,
+                    256
+                ]
+            }
+        },
+        "dataloader": {
+            "train": {
+                "name": "DataLoader",
+                "params": {
+                    "num_workers": 4,
+                    "shuffle": true,
+                    "drop_last": true,
+                    "pin_memory": true
+                }
+            },
+            "val": {
+                "name": "DataLoader",
+                "params": {
+                    "num_workers": 4,
+                    "shuffle": false,
+                    "drop_last": false,
+                    "pin_memory": true
+                }
+            }
+        },
+        "probabilityOfExchangeTemporal": 0.5,
+        "probabilityOfSelfPair": -0.001,
+        "colorJitterParams": [
+            0.4,
+            0.4,
+            0.2,
+            0.1
+        ],
+        "colorJitterProbs": 0.8,
+        "imgNormalizeMean": [
+            0.485,
+            0.456,
+            0.406
+        ],
+        "imgNormalizeStd": [
+            0.229,
+            0.224,
+            0.225
+        ],
+        "isMirrorPadding": true,
+        "checkpointPath": "data/checkpoints",
+        "resultPath": "data/checkpoints",
+        "spaceAugment": {
+            "name": "randomSpaceAugmentWithGlobalMirrorCrop",
+            "params": {}
+        }
+    },
+    "training": {
+        "optimizer": {
+            "name": "AdamW",
+            "params": {
+                "lr": 5e-5,
+                "weight_decay": 0.01,
+                "amsgrad": true
+            }
+        },
+        "scheduler": {
+            "name": "CosineAnnealingWarmRestarts",
+            "params": {
+                "T_0": 10,
+                "T_mult": 2,
+                "eta_min": 5e-6
+            },
+            "isSchedulerWork": false
+        },
+        "computeBatchSize": 32,
+        "gpuBatchSize": 16,
+        "dataNumWorkers": 4,
+        "startEpoch": 0,
+        "totalEpochs": 200,
+        "randomSeed": 44,
+        "useCuda": true,
+        "useAmp": false,
+        "cudnnDeterministic": true,
+        "cudnnBenchmark": false,
+        "float32MatmulPrecision": "high"
+    },
+    "visualization": {
+        "epochCalculateMetrics": [
+            "TP",
+            "FP",
+            "TN",
+            "FN",
+            "Acc",
+            "Pre",
+            "Rec",
+            "IoU",
+            "F1",
+            "Kappa",
+            "Loss"
+        ],
+        "epochsDisplayMetrics": [
+            "Acc",
+            "Pre",
+            "Rec",
+            "IoU",
+            "F1",
+            "Kappa",
+            "Loss"
+        ],
+        "meanMetrics": [
+            "Pre",
+            "Rec",
+            "IoU",
+            "F1"
+        ],
+        "plotMetrics": [
+            "F1",
+            "IoU",
+            "Loss"
+        ]
+    }
+}
